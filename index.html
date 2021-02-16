@@ -1,0 +1,95 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="./pvector.min.js"></script>
+    <title>Machine Learning example</title>
+    <style>
+        #playground {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="playground" width="800" height="800"></canvas>
+</body>
+
+<script>
+    let width = 800;
+    let height = 800;
+
+    const canvas = document.getElementById('playground');
+    const ctx = canvas.getContext('2d');
+
+    class Dot {
+        constructor() {
+            this.position = new PVector(width / 2, height / 2);
+            this.velocity = new PVector(0, 0);
+            this.acceleration = new PVector(0, 0);
+
+            this.brain = new Brain(400);
+            this.dead = false;
+        }
+
+        show() {
+            ctx.fillStyle = "black";
+            ctx.fillRect(this.position.x, this.position.y, 4, 4)
+        }
+
+        move() {
+            if (this.brain.directions.length > this.brain.step) {
+                this.acceleration = this.brain.directions[this.brain.step];
+                this.brain.step++;
+            }
+            this.velocity.maxMag(5);
+            this.velocity.add(this.acceleration);
+            this.position.add(this.velocity);
+        }
+
+        update() {
+            if (!this.dead) {
+                this.move();
+                if (this.position.x < 2 || this.position.y < 2 || this.position.x > width - 2 || this.position.y > height - 2) {
+                    this.dead = true;
+                }
+            }
+        }
+    }
+
+    class Brain {
+        constructor(size) {
+            this.directions = [];
+            this.step = 0;
+            for (let i = 0; i < size; i++) {
+                this.directions[i] = new PVector();
+            }
+            this.randomize();
+        }
+
+        randomize() {
+            for (let i = 0; i < this.directions.length; i++) {
+                let angle = Math.random() * (2 * Math.PI);
+                this.directions[i] = PVector.fromAngle(angle);
+            }
+        }
+    }
+
+    let dot = new Dot();
+
+    let tick = () => {
+        ctx.clearRect(0, 0, width, height);
+
+        dot.show();
+        dot.update();
+    }
+
+    setInterval(() => {
+        tick();
+    }, 10);
+
+</script>
+
+</html>
